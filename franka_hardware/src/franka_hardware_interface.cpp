@@ -165,6 +165,14 @@ hardware_interface::return_type FrankaHardwareInterface::read(const rclcpp::Time
     hw_franka_model_ptr_ = robot_->getModel();
   }
   hw_franka_robot_state_ = robot_->readOnce();
+  // try {
+  //   // TODO: Hacky to see what happens next
+  //   hw_franka_robot_state_ = robot_->readOnce();
+  // }
+  // catch(franka::ControlException &e) {
+  //   RCLCPP_WARN(getLogger(), "Exceptions: %s", e.what());
+  //   return hardware_interface::return_type::OK;
+  // }
   robot_time_state_ = hw_franka_robot_state_.time.toSec();
   initializePositionCommands(hw_franka_robot_state_);
 
@@ -265,6 +273,7 @@ CallbackReturn FrankaHardwareInterface::on_init(const hardware_interface::Hardwa
     }
   }
   if (!robot_) {
+    interface_prefix_ = info_.hardware_parameters["prefix"];
     std::string robot_ip;
     try {
       robot_ip = info_.hardware_parameters.at("robot_ip");
@@ -393,6 +402,16 @@ hardware_interface::return_type FrankaHardwareInterface::perform_command_mode_sw
 hardware_interface::return_type FrankaHardwareInterface::prepare_command_mode_switch(
     const std::vector<std::string>& start_interfaces,
     const std::vector<std::string>& stop_interfaces) {
+    std::cout << "FrankaHardwareInterface::prepare_command_mode_switch:" << std::endl;
+    std::cout << "strat_inferfaces:" << std::endl;
+    for (const auto& start_if : start_interfaces) {
+    std::cout << start_if << std::endl;
+  }
+    std::cout << "stop_inferfaces:" << std::endl;
+  for (const auto& stop_if : stop_interfaces) {
+    std::cout << stop_if << std::endl;
+  }
+
   auto contains_interface_type = [](const std::string& interface,
                                     const std::string& interface_type) {
     size_t slash_position = interface.find('/');
@@ -401,6 +420,10 @@ hardware_interface::return_type FrankaHardwareInterface::prepare_command_mode_sw
       return after_slash == interface_type;
     }
     return false;
+  };
+
+  auto contains_interface_prefix = [this](const std::string& interface) {
+    return interface.find(this->interface_prefix_) != std::string::npos;
   };
 
   auto generate_error_message = [this](const std::string& start_stop_command,
@@ -418,15 +441,16 @@ hardware_interface::return_type FrankaHardwareInterface::prepare_command_mode_sw
   for (const auto& interface : command_interfaces_info_) {
     size_t num_stop_interface =
         std::count_if(stop_interfaces.begin(), stop_interfaces.end(),
-                      [contains_interface_type, &interface](const std::string& interface_given) {
-                        return contains_interface_type(interface_given, interface.interface_type);
+                      [contains_interface_prefix, contains_interface_type, &interface](const std::string& interface_given) {
+                        return contains_interface_type(interface_given, interface.interface_type) && contains_interface_prefix(interface_given);
                       });
     size_t num_start_interface =
         std::count_if(start_interfaces.begin(), start_interfaces.end(),
-                      [contains_interface_type, &interface](const std::string& interface_given) {
-                        return contains_interface_type(interface_given, interface.interface_type);
+                      [contains_interface_prefix, contains_interface_type, &interface](const std::string& interface_given) {
+                        return contains_interface_type(interface_given, interface.interface_type) && contains_interface_prefix(interface_given);
                       });
-
+    std::cout << "num_stop_interface: " << num_stop_interface << std::endl;
+    std::cout << "num_start_interface: " << num_start_interface << std::endl;
     if (num_stop_interface == interface.size) {
       interface.claim_flag = false;
     } else if (num_stop_interface != 0U) {
