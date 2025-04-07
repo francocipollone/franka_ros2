@@ -165,14 +165,6 @@ hardware_interface::return_type FrankaHardwareInterface::read(const rclcpp::Time
     hw_franka_model_ptr_ = robot_->getModel();
   }
   hw_franka_robot_state_ = robot_->readOnce();
-  // try {
-  //   // TODO: Hacky to see what happens next
-  //   hw_franka_robot_state_ = robot_->readOnce();
-  // }
-  // catch(franka::ControlException &e) {
-  //   RCLCPP_WARN(getLogger(), "Exceptions: %s", e.what());
-  //   return hardware_interface::return_type::OK;
-  // }
   robot_time_state_ = hw_franka_robot_state_.time.toSec();
   initializePositionCommands(hw_franka_robot_state_);
 
@@ -402,15 +394,6 @@ hardware_interface::return_type FrankaHardwareInterface::perform_command_mode_sw
 hardware_interface::return_type FrankaHardwareInterface::prepare_command_mode_switch(
     const std::vector<std::string>& start_interfaces,
     const std::vector<std::string>& stop_interfaces) {
-    std::cout << "FrankaHardwareInterface::prepare_command_mode_switch:" << std::endl;
-    std::cout << "strat_inferfaces:" << std::endl;
-    for (const auto& start_if : start_interfaces) {
-    std::cout << start_if << std::endl;
-  }
-    std::cout << "stop_inferfaces:" << std::endl;
-  for (const auto& stop_if : stop_interfaces) {
-    std::cout << stop_if << std::endl;
-  }
 
   auto contains_interface_type = [](const std::string& interface,
                                     const std::string& interface_type) {
@@ -449,8 +432,6 @@ hardware_interface::return_type FrankaHardwareInterface::prepare_command_mode_sw
                       [contains_interface_prefix, contains_interface_type, &interface](const std::string& interface_given) {
                         return contains_interface_type(interface_given, interface.interface_type) && contains_interface_prefix(interface_given);
                       });
-    std::cout << "num_stop_interface: " << num_stop_interface << std::endl;
-    std::cout << "num_start_interface: " << num_start_interface << std::endl;
     if (num_stop_interface == interface.size) {
       interface.claim_flag = false;
     } else if (num_stop_interface != 0U) {
