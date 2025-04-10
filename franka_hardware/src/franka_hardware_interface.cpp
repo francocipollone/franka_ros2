@@ -265,7 +265,6 @@ CallbackReturn FrankaHardwareInterface::on_init(const hardware_interface::Hardwa
     }
   }
   if (!robot_) {
-    interface_prefix_ = info_.hardware_parameters["prefix"];
     std::string robot_ip;
     try {
       robot_ip = info_.hardware_parameters.at("robot_ip");
@@ -283,6 +282,7 @@ CallbackReturn FrankaHardwareInterface::on_init(const hardware_interface::Hardwa
                   "Please use the latest franka_description package from: "
                   "https://github.com/frankaemika/franka_description");
     }
+    interface_prefix_ = info_.hardware_parameters["prefix"].empty() ? arm_id_ : info_.hardware_parameters["prefix"] + "_" + arm_id_;
     try {
       RCLCPP_INFO(getLogger(), "Connecting to robot at \"%s\" ...", robot_ip.c_str());
       robot_ = std::make_shared<Robot>(robot_ip, getLogger());
