@@ -34,10 +34,11 @@ class ActionServer : public rclcpp::Node {
   /**
    * @brief Construct the franka ActionServer
    *
+   * @param node_prefix std::string Prefix for the node name
    * @param options rclcpp::NodeOptions Options for the ROS 2 node
    * @param robot std::shared_ptr<Robot> The robot backend
    */
-  ActionServer(const rclcpp::NodeOptions& options, std::shared_ptr<Robot> robot);
+  ActionServer(const std::string& node_prefix, const rclcpp::NodeOptions& options, std::shared_ptr<Robot> robot);
 
  private:
   std::shared_ptr<Robot> robot_;

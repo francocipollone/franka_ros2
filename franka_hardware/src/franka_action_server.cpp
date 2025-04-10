@@ -16,8 +16,8 @@
 
 namespace franka_hardware {
 
-ActionServer::ActionServer(const rclcpp::NodeOptions& options, std::shared_ptr<Robot> robot)
-    : rclcpp::Node("action_server", options), robot_(std::move(robot)) {
+ActionServer::ActionServer(const std::string& node_prefix, const rclcpp::NodeOptions& options, std::shared_ptr<Robot> robot)
+    : rclcpp::Node(node_prefix + "action_server", options), robot_(std::move(robot)) {
   error_recovery_action_server_ = rclcpp_action::create_server<franka_msgs::action::ErrorRecovery>(
       this, "~/error_recovery",
       [](auto /*uuid*/, auto /*goal*/) { return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE; },

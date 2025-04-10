@@ -16,9 +16,9 @@
 
 namespace franka_hardware {
 
-FrankaParamServiceServer::FrankaParamServiceServer(const rclcpp::NodeOptions& options,
+FrankaParamServiceServer::FrankaParamServiceServer(const std::string& node_prefix, const rclcpp::NodeOptions& options,
                                                    std::shared_ptr<Robot> robot)
-    : rclcpp::Node("service_server", options), robot_(std::move(robot)) {
+    : rclcpp::Node(node_prefix + "service_server", options), robot_(std::move(robot)) {
   set_joint_stiffness_service_ = create_service<franka_msgs::srv::SetJointStiffness>(
       "~/set_joint_stiffness",
       [this](const std::shared_ptr<franka_msgs::srv::SetJointStiffness::Request>& request,
